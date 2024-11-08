@@ -23,10 +23,11 @@ int main()
         {
             if (event.type == Event::Closed)
                 window.close();
-            fish.move(2.0f, 0.0f);
-            if (fish.getPosition().x >= 1200) {
-                fish.setPosition(30.0f, fish.getPosition().y);
-            }
+        }
+
+        fish.move(0.05f, 0.0f);
+        if (fish.getPosition().x >= 1200) {
+            fish.setPosition(30.0f, fish.getPosition().y);
         }
 
         window.clear();
