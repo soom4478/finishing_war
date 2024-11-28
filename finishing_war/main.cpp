@@ -107,7 +107,7 @@ int main()
                 // 충돌 후 클릭 횟수 증가
                 clickCount++;
             }
-        }
+        } 
 
         // 화면 렌더링
         window.clear(backgroundColor);
