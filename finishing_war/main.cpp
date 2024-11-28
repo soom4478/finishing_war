@@ -180,16 +180,19 @@ int main()
 
                 // 낚시줄 길이가 충분히 줄어들었으면 낚시 가능 상태로 전환
                 if (length <= lineSpeed) {
-                    isFishing = true;
+                    // 물고기 정보 출력
+                    myFish.printInfo();
                     clickCount = 0; // 클릭 횟수 초기화
                 }
             }
 
+            // 물고기 그리기
+            window.draw(myFish.getShape());
+
             // 낚시줄 그리기
             window.draw(line);
 
-            // 물고기 그리기
-            window.draw(myFish.getShape());  // 물고기 그리기
+            // 플레이어 그리기
             window.draw(player);
         }
 
