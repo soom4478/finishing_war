@@ -1,7 +1,8 @@
 #include <SFML/Graphics.hpp>
-#include <cstdlib> // 랜덤 생성용
-#include <ctime>   // 랜덤 시드용
+#include <cstdlib>  // 랜덤 생성용
+#include <ctime>    // 랜덤 시드용
 #include <iostream> // 콘솔 출력용
+#include "fish.cpp"  // Fish 클래스 구현 파일 포함
 
 using namespace sf;
 
@@ -12,21 +13,13 @@ int main()
     // 배경색 설정
     Color backgroundColor = Color(135, 206, 250); // 하늘색 (RGB)
 
-    // 물고기 텍스처 및 물체 생성
-    Texture fishTextureLeft, fishTextureRight;
-    if (!fishTextureLeft.loadFromFile("images/fish1_1.png") ||
-        !fishTextureRight.loadFromFile("images/fish1_2.png")) {
-        return -1; // 이미지 로드 실패 시 프로그램 종료
-    }
-
-    RectangleShape fish(Vector2f(230.f, 123.f));
-    fish.setTexture(&fishTextureRight);
-    fish.setPosition(-1.0f, 500.0f);
+    // 물고기 객체 생성 (크기 230)
+    Fish myFish(230);
+    myFish.setPosition(0.0f, 500.0f); // 초기 위치 설정
 
     // 물고기 이동 관련 설정
     float fishSpeed = 0.05f; // 물고기 이동 속도
-    bool movingRight = true;
-    bool fishCaught = false; // 물고기 잡힌 상태
+    bool movingRight = true; // 물고기 이동 방향
 
     // 랜덤 시드 초기화
     std::srand(static_cast<unsigned>(std::time(nullptr)));
@@ -45,8 +38,9 @@ int main()
     Vector2f targetPosition;       // 낚시줄 목표 좌표
     bool lineMoving = false;       // 낚시줄이 움직이는 중인지 여부
     bool collisionDetected = false; // 충돌 여부 플래그
-    int clickCount = 0;            // 클릭 횟수
     bool isFishing = true;         // 낚시 가능 여부
+    bool fishCaught = false;       // 물고기 낚음 여부
+    int clickCount = 0;            // 클릭 횟수
 
     // 시작 화면 텍스트
     Font font1, font2;
@@ -88,9 +82,8 @@ int main()
             if (gameState == 0 && event.type == Event::MouseButtonPressed) {
                 gameState = 1;
                 movingRight = (std::rand() % 2 == 0);
-                fish.setTexture(movingRight ? &fishTextureLeft : &fishTextureRight);
-                float startX = movingRight ? 3.0f : 1170.0f;
-                fish.setPosition(startX, 500.0f);
+                myFish.setDirection(movingRight); // 방향 설정 함수 호출
+                myFish.setPosition(movingRight ? 3.0f : 1170.0f, 500.0f);
             }
             else if (gameState == 1 && event.type == Event::MouseButtonPressed && !lineMoving && isFishing) {
                 // 낚시줄 시작 위치 및 목표 위치 설정
@@ -100,14 +93,16 @@ int main()
                 targetPosition = Vector2f(event.mouseButton.x, event.mouseButton.y); // 클릭한 위치를 목표로 설정
                 lineMoving = true; // 낚시줄 이동 시작
                 collisionDetected = false; // 충돌 상태 초기화
-                fishCaught = false; // 물고기 상태 초기화
-                clickCount = 0; // 클릭 횟수 초기화
+                isFishing = false; // 낚시 동작 잠금
             }
-            else if (gameState == 1 && event.type == Event::MouseButtonPressed && collisionDetected) {
-                // 충돌 후 클릭 횟수 증가
-                clickCount++;
+            // 낚시줄에 물고기가 닿으면 클릭을 10번 해야 줄어듬
+            else if (collisionDetected && !lineMoving && clickCount < 10) {
+                if (event.type == Event::MouseButtonPressed) {
+                    clickCount++;
+                    std::cout << "Click count: " << clickCount << "/10" << std::endl;
+                }
             }
-        } 
+        }
 
         // 화면 렌더링
         window.clear(backgroundColor);
@@ -122,23 +117,8 @@ int main()
         }
         else if (gameState == 1) {
             // 물고기 이동
-            if (!fishCaught) {
-                if (movingRight) {
-                    fish.move(fishSpeed, 0.0f);
-                    if (fish.getPosition().x >= 1200) {
-                        movingRight = false;
-                        fish.setTexture(&fishTextureRight);
-                        fish.setPosition(1200.0f, fish.getPosition().y);
-                    }
-                }
-                else {
-                    fish.move(-fishSpeed, 0.0f);
-                    if (fish.getPosition().x <= -230) {
-                        movingRight = true;
-                        fish.setTexture(&fishTextureLeft);
-                        fish.setPosition(-1.0f, fish.getPosition().y);
-                    }
-                }
+            if (!collisionDetected) {
+                myFish.update(); // 물고기 업데이트 (충돌이 없으면 계속 이동)
             }
 
             // 낚시줄 이동
@@ -154,17 +134,18 @@ int main()
                         lineMoving = false;
                     }
                     else {
-                        direction /= length; // 방향 벡터 정규화
-                        line[1].position += direction * lineSpeed; // 한 번에 일정 거리 이동
+                        direction /= length; // 방향 벡터 단위화
+                        line[1].position += direction * lineSpeed; // 낚시줄 이동
                     }
                 }
             }
 
             // 충돌 감지
             if (!lineMoving && !collisionDetected) {
-                FloatRect fishBounds = fish.getGlobalBounds();
+                FloatRect fishBounds = myFish.getGlobalBounds();
                 Vector2f lineEnd = line[1].position;
 
+                // 낚시줄 끝이 물고기 영역 안에 있는지 확인
                 if (fishBounds.contains(lineEnd)) {
                     std::cout << "Collision detected: Fish touched the line!" << std::endl;
                     collisionDetected = true;
@@ -173,7 +154,8 @@ int main()
                 }
             }
 
-            if (collisionDetected && clickCount >= 10) {
+            // 낚시줄 길이 줄이기
+            if (collisionDetected && !lineMoving && clickCount >= 10) {
                 // 낚시줄의 시작점과 끝점
                 Vector2f start = line[0].position;
                 Vector2f end = line[1].position;
@@ -183,6 +165,7 @@ int main()
 
                 // 낚시줄의 길이를 줄이기 위한 정규화 벡터 계산
                 float length = std::sqrt(lineVector.x * lineVector.x + lineVector.y * lineVector.y);
+
                 if (length > lineSpeed) {
                     Vector2f normalizedVector = lineVector / length; // 벡터 정규화
 
@@ -190,19 +173,24 @@ int main()
                     line[1].position -= normalizedVector * lineSpeed;
 
                     // 물고기 위치를 낚시줄 끝에 맞춤
-                    fish.setPosition(line[1].position.x - fish.getSize().x / 2, line[1].position.y);
+                    FloatRect fishBounds = myFish.getGlobalBounds(); // 물고기 경계 가져오기
+                    Vector2f fishSize(fishBounds.width, fishBounds.height); // 물고기 크기
+                    myFish.setPosition(line[1].position.x - fishSize.x / 2, line[1].position.y);
                 }
 
                 // 낚시줄 길이가 충분히 줄어들었으면 낚시 가능 상태로 전환
                 if (length <= lineSpeed) {
                     isFishing = true;
+                    clickCount = 0; // 클릭 횟수 초기화
                 }
             }
 
-            // 메인 화면
-            window.draw(fish);
+            // 낚시줄 그리기
+            window.draw(line);
+
+            // 물고기 그리기
+            window.draw(myFish.getShape());  // 물고기 그리기
             window.draw(player);
-            window.draw(line); // 낚시줄 그리기
         }
 
         window.display();
