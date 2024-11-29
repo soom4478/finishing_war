@@ -27,7 +27,7 @@ int main()
     // 플레이어
     CircleShape player(40.0f);
     player.setFillColor(Color::Green);
-    player.setPosition(560.0f, 50.0f);
+    player.setPosition(560.0f, .0f);
 
     // 낚시줄 설정
     VertexArray line(Lines, 2);
