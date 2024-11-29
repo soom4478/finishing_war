@@ -5,7 +5,7 @@
 using namespace sf;
 using namespace std;
 
-class Fish {
+class Fish : public Drawable {  // sf::Drawable 상속
 private:
     RectangleShape fishShape;
     Texture fishTextureLeft;
@@ -100,8 +100,8 @@ public:
         cout << "Coin: " << coin << endl;
     }
 
-    // 물고기를 화면에 그리기 위한 draw 메서드 추가
-    void draw(RenderWindow& window) {
-        window.draw(fishShape);  // 올바른 매개변수 전달
+    // 물고기를 화면에 그리기 위한 draw 메서드 오버라이드
+    virtual void draw(RenderTarget& target, RenderStates states) const override {
+        target.draw(fishShape, states);  // fishShape를 그립니다
     }
 };

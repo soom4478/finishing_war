@@ -132,6 +132,14 @@ int main()
                     if (length < lineSpeed) {
                         line[1].position = targetPosition; // 목표 도달
                         lineMoving = false;
+
+                        // 낚시줄 끝이 물고기에 닿지 않았을 경우 다시 초기화
+                        if (!collisionDetected) {
+                            std::cout << "Target missed! Resetting the line." << std::endl;
+                            // 새로운 목표 설정
+                            isFishing = true; // 낚시 가능 상태로 되돌리기
+                            clickCount = 0;   // 클릭 횟수 초기화
+                        }
                     }
                     else {
                         direction /= length; // 방향 벡터 단위화
@@ -139,6 +147,7 @@ int main()
                     }
                 }
             }
+
 
             // 충돌 감지
             if (!lineMoving && !collisionDetected) {
@@ -178,24 +187,39 @@ int main()
                     myFish.setPosition(line[1].position.x - fishSize.x / 2, line[1].position.y);
                 }
 
-                // 낚시줄 길이가 충분히 줄어들었으면 낚시 가능 상태로 전환
+                // 낚시줄 길이가 충분히 줄어들었으면 새로운 물고기 객체를 생성
                 if (length <= lineSpeed) {
                     // 물고기 정보 출력
                     myFish.printInfo();
                     clickCount = 0; // 클릭 횟수 초기화
+
+                    // 새로운 물고기 객체 생성 (낚시줄이 완전히 줄어들었을 때)
+                    movingRight = (std::rand() % 2 == 0);  // 랜덤 방향 설정
+                    myFish = Fish(230);
+                    myFish.setDirection(movingRight); // 방향 설정 함수 호출
+                    myFish.setPosition(movingRight ? 3.0f : 1170.0f, 500.0f); // 새 위치로 이동
+
+                    // 새로 생성된 물고기의 이동을 업데이트
+                    myFish.update();  // 물고기의 움직임을 업데이트
+
+                    // 낚시줄을 다시 클릭할 수 있도록 상태 초기화
+                    lineMoving = false;
+                    collisionDetected = false;
+                    fishCaught = false;
+                    isFishing = true; // 낚시 동작 가능
                 }
             }
-
-            // 물고기 그리기
-            window.draw(myFish.getShape());
 
             // 낚시줄 그리기
             window.draw(line);
 
-            // 플레이어 그리기
             window.draw(player);
+
+            // 물고기 그리기
+            window.draw(myFish);
         }
 
+        // 화면 출력
         window.display();
     }
 
