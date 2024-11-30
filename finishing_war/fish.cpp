@@ -6,7 +6,7 @@ using namespace sf;
 using namespace std;
 
 class Fish : public Drawable {  // sf::Drawable 상속
-private:
+protected:
     RectangleShape fishShape;
     Texture fishTextureLeft;
     Texture fishTextureRight;
@@ -104,4 +104,33 @@ public:
     virtual void draw(RenderTarget& target, RenderStates states) const override {
         target.draw(fishShape, states);  // fishShape를 그립니다
     }
+};
+
+class MiniFish : public Fish {
+private:
+    Texture miniFishTextureLeft;
+    Texture miniFishTextureRight;
+
+public:
+    MiniFish(int sizeInput) : Fish(sizeInput) {  // 부모 클래스 생성자 호출
+        // MiniFish에 맞는 고유 값들 설정
+        name = "MiniFish";  // 이름 변경
+        value = "Common";   // 가치 변경
+        area = "Pond";      // 영역 변경
+        coin = 50;          // 코인 변경
+        setSpeed(0.1f);     // 속도 설정 (다르게 설정 가능)
+
+        // MiniFish의 텍스처 로드
+        if (!miniFishTextureRight.loadFromFile("images/fish2_1.png") ||
+            !miniFishTextureLeft.loadFromFile("images/fish2_2.png")) {
+            throw runtime_error("Failed to load MiniFish textures");
+        }
+
+        // MiniFish의 크기 변경 (기본 크기와 비율을 다르게 설정)
+        fishShape.setSize(Vector2f(static_cast<float>(size / 2), static_cast<float>(size / 4)));
+        fishShape.setPosition(100.0f, 500.0f);  // 초기 위치 설정
+        setDirection(true);  // 초기 방향 설정 (오른쪽으로 이동)
+    }
+
+    // MiniFish에 필요한 메서드를 여기에 추가할 수 있습니다.
 };

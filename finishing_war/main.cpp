@@ -23,9 +23,17 @@ int main()
     Sprite startBackground(startBackgroundTexture);
     Sprite gameBackground(gameBackgroundTexture);
 
-    // 물고기 객체 생성
-    Fish myFish(230);
-    myFish.setPosition(0.0f, 500.0f);
+    // 물고기 객체 생성 (30% 확률로 MiniFish 객체 생성)
+    Fish* myFish;
+    if (std::rand() % 100 < 90) {
+        // 30% 확률로 MiniFish 객체 생성
+        myFish = new MiniFish(230);
+    }
+    else {
+        // 70% 확률로 Fish 객체 생성
+        myFish = new Fish(230);
+    }
+    myFish->setPosition(0.0f, 500.0f);
 
     float fishSpeed = 0.05f;
     bool movingRight = true;
@@ -85,8 +93,8 @@ int main()
             if (gameState == 0 && event.type == Event::MouseButtonPressed) {
                 gameState = 1;
                 movingRight = (std::rand() % 2 == 0);
-                myFish.setDirection(movingRight);
-                myFish.setPosition(movingRight ? 3.0f : 1170.0f, 500.0f);
+                myFish->setDirection(movingRight);
+                myFish->setPosition(movingRight ? 3.0f : 1170.0f, 500.0f);
             }
             else if (gameState == 1 && event.type == Event::MouseButtonPressed && !lineMoving && isFishing) {
                 Vector2f playerTopRight = player.getPosition() + Vector2f(player.getRadius(), -player.getRadius());
@@ -119,7 +127,7 @@ int main()
             window.draw(gameBackground);
 
             if (!collisionDetected) {
-                myFish.update();
+                myFish->update();
             }
 
             if (lineMoving) {
@@ -145,7 +153,7 @@ int main()
             }
 
             if (!lineMoving && !collisionDetected) {
-                FloatRect fishBounds = myFish.getGlobalBounds();
+                FloatRect fishBounds = myFish->getGlobalBounds();
                 Vector2f lineEnd = line[1].position;
                 Vector2f lineStart = line[0].position;
 
@@ -173,7 +181,6 @@ int main()
                 }
             }
 
-
             if (collisionDetected && !lineMoving && clickCount >= 10) {
                 Vector2f start = line[0].position;
                 Vector2f end = line[1].position;
@@ -185,19 +192,28 @@ int main()
                     Vector2f normalizedVector = lineVector / length;
                     line[1].position -= normalizedVector * lineSpeed;
 
-                    FloatRect fishBounds = myFish.getGlobalBounds();
+                    FloatRect fishBounds = myFish->getGlobalBounds();
                     Vector2f fishSize(fishBounds.width, fishBounds.height);
-                    myFish.setPosition(line[1].position.x - fishSize.x / 2, line[1].position.y);
+                    myFish->setPosition(line[1].position.x - fishSize.x / 2, line[1].position.y);
                 }
 
                 if (length <= lineSpeed) {
-                    myFish.printInfo();
+                    myFish->printInfo();
                     clickCount = 0;
 
                     movingRight = (std::rand() % 2 == 0);
-                    myFish = Fish(230);
-                    myFish.setDirection(movingRight);
-                    myFish.setPosition(movingRight ? 3.0f : 1170.0f, 500.0f);
+                    if (std::rand() % 100 < 30) {
+                        // 30% 확률로 MiniFish 객체 생성
+                        delete myFish;
+                        myFish = new MiniFish(230);
+                    }
+                    else {
+                        // 70% 확률로 Fish 객체 생성
+                        delete myFish;
+                        myFish = new Fish(230);
+                    }
+                    myFish->setDirection(movingRight);
+                    myFish->setPosition(movingRight ? 3.0f : 1170.0f, 500.0f);
 
                     lineMoving = false;
                     collisionDetected = false;
@@ -208,11 +224,12 @@ int main()
 
             window.draw(line);
             window.draw(player);
-            window.draw(myFish);
+            window.draw(*myFish);  // myFish는 포인터이므로 dereference해서 그립니다
         }
 
         window.display();
     }
 
+    delete myFish;  // 종료 전에 할당한 메모리 해제
     return 0;
 }
