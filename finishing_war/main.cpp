@@ -11,7 +11,7 @@ int main()
     RenderWindow window(VideoMode(1200, 750), "Fishing Game");
 
     // 배경 텍스처 설정
-    Texture startBackgroundTexture, gameBackgroundTexture;
+    Texture startBackgroundTexture, gameBackgroundTexture, badendingTexture;
     if (!startBackgroundTexture.loadFromFile("images/background_1.png")) {
         std::cerr << "Failed to load start background image!" << std::endl;
         return -1;
@@ -20,18 +20,24 @@ int main()
         std::cerr << "Failed to load game background image!" << std::endl;
         return -1;
     }
+    if (!badendingTexture.loadFromFile("images/badending.png")) {
+        std::cerr << "Failed to load game background image!" << std::endl;
+        return -1;
+    }
+
     Sprite startBackground(startBackgroundTexture);
     Sprite gameBackground(gameBackgroundTexture);
+    Sprite badBackground(badendingTexture);
 
     // 물고기 객체 생성 (30% 확률로 MiniFish 객체 생성)
     Fish* myFish;
     if (std::rand() % 100 < 90) {
         // 30% 확률로 MiniFish 객체 생성
-        myFish = new MiniFish(230);
+        myFish = new MiniFish(230, "images/fish2_1.png", "images/fish2_2.png");
     }
     else {
         // 70% 확률로 Fish 객체 생성
-        myFish = new Fish(230);
+        myFish = new Fish(250, "images/fish1_1.png", "images/fish1_2.png");
     }
     myFish->setPosition(0.0f, 500.0f);
 
@@ -55,6 +61,7 @@ int main()
     bool isFishing = true;
     bool fishCaught = false;
     int clickCount = 0;
+    int missCount = 0;
 
     Font font1, font2;
     if (!font1.loadFromFile("fonts/런드리고딕OTF Bold.otf")) {
@@ -123,6 +130,7 @@ int main()
             window.draw(startT_4);
             window.draw(startT_5);
         }
+
         else if (gameState == 1) {
             window.draw(gameBackground);
 
@@ -141,6 +149,9 @@ int main()
                         lineMoving = false;
                         if (!collisionDetected) {
                             std::cout << "Target missed! Resetting the line." << std::endl;
+                            missCount++;
+                            cout << "miss";
+                            if (missCount == 3) gameState = 3;
                             isFishing = true;
                             clickCount = 0;
                         }
@@ -205,12 +216,12 @@ int main()
                     if (std::rand() % 100 < 30) {
                         // 30% 확률로 MiniFish 객체 생성
                         delete myFish;
-                        myFish = new MiniFish(230);
+                        myFish = new MiniFish(230, "images/fish2_1.png", "images/fish2_2.png");
                     }
                     else {
                         // 70% 확률로 Fish 객체 생성
                         delete myFish;
-                        myFish = new Fish(230);
+                        myFish = new Fish(250, "images/fish1_1.png", "images/fish1_2.png");
                     }
                     myFish->setDirection(movingRight);
                     myFish->setPosition(movingRight ? 3.0f : 1170.0f, 500.0f);
@@ -225,6 +236,10 @@ int main()
             window.draw(line);
             window.draw(player);
             window.draw(*myFish);  // myFish는 포인터이므로 dereference해서 그립니다
+        }
+
+        else if (gameState == 3) {
+            window.draw(badBackground);
         }
 
         window.display();

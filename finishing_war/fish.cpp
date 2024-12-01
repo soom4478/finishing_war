@@ -13,23 +13,21 @@ protected:
     float speed;
 
 public:
-    string name;
+    string name = "fish";
     int size;
-    string value;
-    string area;
-    int coin;
+    string value = "common";
+    string area = "pond";
+    int coin = 100;
 
     bool movingRight;
 
-    Fish(int sizeInput) : size(sizeInput), movingRight(true), speed(0.05f) {
-        name = "Goldfish";
-        value = "Rare";
-        area = "River";
-        coin = 100;
+    // 생성자에서 텍스처 파일 경로를 파라미터로 받음
+    Fish(int sizeInput, const string& textureRightPath, const string& textureLeftPath)
+        : size(sizeInput), movingRight(true), speed(0.05f) {
 
         // 텍스처 로드
-        if (!fishTextureRight.loadFromFile("images/fish1_1.png") ||
-            !fishTextureLeft.loadFromFile("images/fish1_2.png")) {
+        if (!fishTextureRight.loadFromFile(textureRightPath) ||
+            !fishTextureLeft.loadFromFile(textureLeftPath)) {
             throw runtime_error("Failed to load fish textures");
         }
 
@@ -112,17 +110,19 @@ private:
     Texture miniFishTextureRight;
 
 public:
-    MiniFish(int sizeInput) : Fish(sizeInput) {  // 부모 클래스 생성자 호출
+    // MiniFish 생성자에서 텍스처 파일 경로를 받음
+    MiniFish(int sizeInput, const string& textureRightPath, const string& textureLeftPath)
+        : Fish(sizeInput, textureRightPath, textureLeftPath) {  // 부모 클래스 생성자 호출
         // MiniFish에 맞는 고유 값들 설정
         name = "MiniFish";  // 이름 변경
         value = "Common";   // 가치 변경
         area = "Pond";      // 영역 변경
         coin = 50;          // 코인 변경
-        setSpeed(0.1f);     // 속도 설정 (다르게 설정 가능)
+        setSpeed(0.2f);     // 속도 설정 (다르게 설정 가능)
 
         // MiniFish의 텍스처 로드
-        if (!miniFishTextureRight.loadFromFile("images/fish2_1.png") ||
-            !miniFishTextureLeft.loadFromFile("images/fish2_2.png")) {
+        if (!miniFishTextureRight.loadFromFile(textureRightPath) ||
+            !miniFishTextureLeft.loadFromFile(textureLeftPath)) {
             throw runtime_error("Failed to load MiniFish textures");
         }
 
