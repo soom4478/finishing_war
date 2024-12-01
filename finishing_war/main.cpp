@@ -1,4 +1,4 @@
-#include <SFML/Graphics.hpp>
+ï»¿#include <SFML/Graphics.hpp>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
@@ -10,8 +10,10 @@ int main()
 {
     RenderWindow window(VideoMode(1200, 750), "Fishing Game");
 
-    // ¹è°æ ÅØ½ºÃ³ ¼³Á¤
+    // ë°°ê²½ í…ìŠ¤ì²˜ ì„¤ì •
     Texture startBackgroundTexture, gameBackgroundTexture, badendingTexture;
+    Texture clickTexture, infoTexture, btn1Textrue;
+
     if (!startBackgroundTexture.loadFromFile("images/background_1.png")) {
         std::cerr << "Failed to load start background image!" << std::endl;
         return -1;
@@ -25,18 +27,45 @@ int main()
         return -1;
     }
 
+    if (!clickTexture.loadFromFile("images/click.png")) {
+        cerr << "Fail load" << endl;
+        return -1;
+    }
+    if (!infoTexture.loadFromFile("images/infoBox.png")) {
+        cerr << "Fail load" << endl;
+        return -1;
+    }
+    if (!btn1Textrue.loadFromFile("images/btn1.png")) {
+        cerr << "Fail load" << endl;
+        return -1;
+    }
+
+    // ë°°ê²½
     Sprite startBackground(startBackgroundTexture);
     Sprite gameBackground(gameBackgroundTexture);
     Sprite badBackground(badendingTexture);
+    // ê·¸ì™¸
+    Sprite clickIcon(clickTexture);
+    clickIcon.setPosition(
+        (window.getSize().x - clickIcon.getTexture()->getSize().x) / 2.0f, // X ì¢Œí‘œ
+        (window.getSize().y - clickIcon.getTexture()->getSize().y) / 2.0f  // Y ì¢Œí‘œ
+    );
+    Sprite infoBox(infoTexture);
+    infoBox.setPosition( // ì •ê°€ìš´ë°
+        (window.getSize().x - infoBox.getTexture()->getSize().x) / 2.0f, // X ì¢Œí‘œ
+        (window.getSize().y - infoBox.getTexture()->getSize().y) / 2.0f  // Y ì¢Œí‘œ
+    );
+    Sprite checkBtn(btn1Textrue);
+    checkBtn.setPosition(510.f, 270.f);
 
-    // ¹°°í±â °´Ã¼ »ı¼º (30% È®·ü·Î MiniFish °´Ã¼ »ı¼º)
+    // ë¬¼ê³ ê¸° ê°ì²´ ìƒì„± (30% í™•ë¥ ë¡œ MiniFish ê°ì²´ ìƒì„±)
     Fish* myFish;
-    if (std::rand() % 100 < 90) {
-        // 30% È®·ü·Î MiniFish °´Ã¼ »ı¼º
+    if (std::rand() % 100 < 30) {
+        // 30% í™•ë¥ ë¡œ MiniFish ê°ì²´ ìƒì„±
         myFish = new MiniFish(230, "images/fish2_1.png", "images/fish2_2.png");
     }
     else {
-        // 70% È®·ü·Î Fish °´Ã¼ »ı¼º
+        // 70% í™•ë¥ ë¡œ Fish ê°ì²´ ìƒì„±
         myFish = new Fish(250, "images/fish1_1.png", "images/fish1_2.png");
     }
     myFish->setPosition(0.0f, 500.0f);
@@ -60,14 +89,23 @@ int main()
     bool collisionDetected = false;
     bool isFishing = true;
     bool fishCaught = false;
+    bool showInfo = false;
     int clickCount = 0;
     int missCount = 0;
+    int catchedFish = 0;
+    int day = 1;
 
-    Font font1, font2;
-    if (!font1.loadFromFile("fonts/·±µå¸®°íµñOTF Bold.otf")) {
+    Font font1, font2, font3, font4;
+    if (!font1.loadFromFile("fonts/ëŸ°ë“œë¦¬ê³ ë”•OTF Bold.otf")) {
         return -1;
     }
-    if (!font2.loadFromFile("fonts/Àü³²±³À°À¯³ªÃ¼ TTF Regular.ttf")) {
+    if (!font2.loadFromFile("fonts/ì „ë‚¨êµìœ¡ìœ ë‚˜ì²´ TTF Regular.ttf")) {
+        return -1;
+    }
+    if (!font3.loadFromFile("fonts/The Jamsil 3 Regular.ttf")) {
+        return -1;
+    }
+    if (!font4.loadFromFile("fonts/The Jamsil 2 Light.ttf")) {
         return -1;
     }
 
@@ -86,6 +124,23 @@ int main()
     Text startT_5("click the screen!", font2, 50);
     startT_5.setFillColor(Color::White);
     startT_5.setPosition(465.f, 450.f);
+
+    // info í…ìŠ¤íŠ¸
+    Text infoT_1("íšë“ ë¬¼ê³ ê¸°", font1, 50);
+    infoT_1.setFillColor(Color::White);
+    infoT_1.setPosition(465.f, 450.f);
+    Text infoT_2("íšë“ ë¬¼ê³ ê¸°", font1, 50);
+    infoT_2.setFillColor(Color::White);
+    infoT_2.setPosition(465.f, 450.f);
+    Text infoT_3("íšë“ ë¬¼ê³ ê¸°", font1, 50);
+    infoT_3.setFillColor(Color::White);
+    infoT_3.setPosition(465.f, 450.f);
+    Text infoT_4("íšë“ ë¬¼ê³ ê¸°", font1, 50);
+    infoT_4.setFillColor(Color::White);
+    infoT_4.setPosition(465.f, 450.f);
+    Text infoT_5("íšë“ ë¬¼ê³ ê¸°", font1, 50);
+    infoT_5.setFillColor(Color::White);
+    infoT_5.setPosition(465.f, 450.f);
 
     int gameState = 0;
 
@@ -118,6 +173,16 @@ int main()
                     std::cout << "Click count: " << clickCount << "/10" << std::endl;
                 }
             }
+
+            // infoBtní´ë¦­ ì´ë²¤íŠ¸
+            if (event.type == Event::MouseButtonPressed) {
+                if (event.mouseButton.button == Mouse::Left) {
+                    // í´ë¦­ ìœ„ì¹˜ê°€ checkBtnì˜ ê²½ê³„ ì•ˆì— ìˆëŠ”ì§€ í™•ì¸
+                    if (checkBtn.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y)) {
+                        showInfo = false; // ë²„íŠ¼ í´ë¦­ ì‹œ showInfoë¥¼ falseë¡œ ì„¤ì •
+                    }
+                }
+            }
         }
 
         window.clear();
@@ -133,9 +198,56 @@ int main()
 
         else if (gameState == 1) {
             window.draw(gameBackground);
-
             if (!collisionDetected) {
                 myFish->update();
+            }
+
+            if (!lineMoving && !collisionDetected) {
+                FloatRect fishBounds = myFish->getGlobalBounds();
+                Vector2f lineEnd = line[1].position;
+                Vector2f lineStart = line[0].position;
+
+                // ë¬¼ê³ ê¸°ì™€ ì¤„ ëì´ ì¶©ëŒí–ˆëŠ”ì§€ í™•ì¸
+                if (fishBounds.contains(lineEnd)) {
+                    if(missCount > 0) missCount--;
+                    cout << missCount << endl;
+                    std::cout << "Collision detected: Fish touched the line!" << std::endl;
+                    collisionDetected = true;
+                    fishCaught = true;
+                    isFishing = false;
+                }
+                else {
+                    // ì¤„ì˜ ê¸¸ì´ë¥¼ ì¤„ì—¬ì„œ ìì—°ìŠ¤ëŸ½ê²Œ ìœ„ë¡œ ì˜¬ë¼ê°€ê²Œ ë§Œë“¤ê¸°
+                    Vector2f lineVector = lineEnd - lineStart;
+                    float lineLength = std::sqrt(lineVector.x * lineVector.x + lineVector.y * lineVector.y);
+
+                    if (lineLength > lineSpeed) {
+                        Vector2f normalizedVector = lineVector / lineLength;
+                        line[1].position -= normalizedVector * lineSpeed;  // ì¤„ ëì„ ìœ„ë¡œ ì´ë™
+                    }
+                    else {
+                        // ì¤„ì´ ëì— ë‹¤ë‹¤ë¥´ë©´ ì¤„ì„ ë‹¤ì‹œ ë‚´ë ¤ë†“ê³  ë‚šì‹œë¥¼ ì¬ê°œ
+                        isFishing = true;
+                        clickCount = 0;
+                    }
+                }
+            }
+
+            // ì¶©ëŒ ë°œìƒ ì‹œ clickIcon ê·¸ë¦¬ê¸°
+            if (collisionDetected) {
+                if (clickCount < 10) {
+                    window.draw(clickIcon);
+                }
+            }
+
+            if (showInfo) {
+                window.draw(infoBox);
+                window.draw(checkBtn);
+                window.draw(infoT_1);
+                window.draw(infoT_2);
+                window.draw(infoT_3);
+                window.draw(infoT_4);
+                window.draw(infoT_5);
             }
 
             if (lineMoving) {
@@ -149,45 +261,16 @@ int main()
                         lineMoving = false;
                         if (!collisionDetected) {
                             std::cout << "Target missed! Resetting the line." << std::endl;
-                            missCount++;
-                            cout << "miss";
-                            if (missCount == 3) gameState = 3;
                             isFishing = true;
                             clickCount = 0;
+                            missCount++;
+                            cout << "miss" << endl;
+                            if (missCount == 3) gameState = 3;
                         }
                     }
                     else {
                         direction /= length;
                         line[1].position += direction * lineSpeed;
-                    }
-                }
-            }
-
-            if (!lineMoving && !collisionDetected) {
-                FloatRect fishBounds = myFish->getGlobalBounds();
-                Vector2f lineEnd = line[1].position;
-                Vector2f lineStart = line[0].position;
-
-                // ¹°°í±â¿Í ÁÙ ³¡ÀÌ Ãæµ¹Çß´ÂÁö È®ÀÎ
-                if (fishBounds.contains(lineEnd)) {
-                    std::cout << "Collision detected: Fish touched the line!" << std::endl;
-                    collisionDetected = true;
-                    fishCaught = true;
-                    isFishing = false;
-                }
-                else {
-                    // ÁÙÀÇ ±æÀÌ¸¦ ÁÙ¿©¼­ ÀÚ¿¬½º·´°Ô À§·Î ¿Ã¶ó°¡°Ô ¸¸µé±â
-                    Vector2f lineVector = lineEnd - lineStart;
-                    float lineLength = std::sqrt(lineVector.x * lineVector.x + lineVector.y * lineVector.y);
-
-                    if (lineLength > lineSpeed) {
-                        Vector2f normalizedVector = lineVector / lineLength;
-                        line[1].position -= normalizedVector * lineSpeed;  // ÁÙ ³¡À» À§·Î ÀÌµ¿
-                    }
-                    else {
-                        // ÁÙÀÌ ³¡¿¡ ´Ù´Ù¸£¸é ÁÙÀ» ´Ù½Ã ³»·Á³õ°í ³¬½Ã¸¦ Àç°³
-                        isFishing = true;
-                        clickCount = 0;
                     }
                 }
             }
@@ -206,36 +289,44 @@ int main()
                     FloatRect fishBounds = myFish->getGlobalBounds();
                     Vector2f fishSize(fishBounds.width, fishBounds.height);
                     myFish->setPosition(line[1].position.x - fishSize.x / 2, line[1].position.y);
+                    showInfo = true;
                 }
 
-                if (length <= lineSpeed) {
-                    myFish->printInfo();
-                    clickCount = 0;
+                if (!showInfo) {
+                    if (length <= lineSpeed) {
+                        myFish->printInfo();
+                        clickCount = 0;
 
-                    movingRight = (std::rand() % 2 == 0);
-                    if (std::rand() % 100 < 30) {
-                        // 30% È®·ü·Î MiniFish °´Ã¼ »ı¼º
-                        delete myFish;
-                        myFish = new MiniFish(230, "images/fish2_1.png", "images/fish2_2.png");
-                    }
-                    else {
-                        // 70% È®·ü·Î Fish °´Ã¼ »ı¼º
-                        delete myFish;
-                        myFish = new Fish(250, "images/fish1_1.png", "images/fish1_2.png");
-                    }
-                    myFish->setDirection(movingRight);
-                    myFish->setPosition(movingRight ? 3.0f : 1170.0f, 500.0f);
+                        movingRight = (rand() % 2 == 0);
+                        if (rand() % 100 < 30) {
+                            // 30% í™•ë¥ ë¡œ MiniFish ê°ì²´ ìƒì„±
+                            delete myFish;
+                            myFish = new MiniFish(230, "images/fish2_1.png", "images/fish2_2.png");
+                        }
+                        else {
+                            // 70% í™•ë¥ ë¡œ Fish ê°ì²´ ìƒì„±
+                            delete myFish;
+                            myFish = new Fish(250, "images/fish1_1.png", "images/fish1_2.png");
+                        }
+                        myFish->setDirection(movingRight);
+                        myFish->setPosition(movingRight ? 3.0f : 1170.0f, 500.0f);
 
-                    lineMoving = false;
-                    collisionDetected = false;
-                    fishCaught = false;
-                    isFishing = true;
+                        lineMoving = false;
+                        collisionDetected = false;
+                        fishCaught = false;
+                        isFishing = true;
+                        catchedFish += 1;
+                        if (catchedFish == 5) {
+                            day += 1;
+                            cout << "today : " << day << endl;
+                        }
+                    }
                 }
             }
 
             window.draw(line);
             window.draw(player);
-            window.draw(*myFish);  // myFish´Â Æ÷ÀÎÅÍÀÌ¹Ç·Î dereferenceÇØ¼­ ±×¸³´Ï´Ù
+            window.draw(*myFish);  // myFishëŠ” í¬ì¸í„°ì´ë¯€ë¡œ dereferenceí•´ì„œ ê·¸ë¦½ë‹ˆë‹¤
         }
 
         else if (gameState == 3) {
@@ -245,6 +336,6 @@ int main()
         window.display();
     }
 
-    delete myFish;  // Á¾·á Àü¿¡ ÇÒ´çÇÑ ¸Ş¸ğ¸® ÇØÁ¦
+    delete myFish;  // ì¢…ë£Œ ì „ì— í• ë‹¹í•œ ë©”ëª¨ë¦¬ í•´ì œ
     return 0;
 }
