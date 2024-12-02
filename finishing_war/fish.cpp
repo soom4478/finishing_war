@@ -1,11 +1,11 @@
-#include <SFML/Graphics.hpp>
+ï»¿#include <SFML/Graphics.hpp>
 #include <string>
 #include <iostream>
 
 using namespace sf;
 using namespace std;
 
-class Fish : public Drawable {  // sf::Drawable »ó¼Ó
+class Fish : public Drawable {  // sf::Drawable ìƒì†
 protected:
     RectangleShape fishShape;
     Texture fishTextureLeft;
@@ -18,23 +18,24 @@ public:
     string value = "common";
     string area = "pond";
     int coin = 100;
+    string imgPath;
 
     bool movingRight;
 
-    // »ı¼ºÀÚ¿¡¼­ ÅØ½ºÃ³ ÆÄÀÏ °æ·Î¸¦ ÆÄ¶ó¹ÌÅÍ·Î ¹ŞÀ½
+    // ìƒì„±ìì—ì„œ í…ìŠ¤ì²˜ íŒŒì¼ ê²½ë¡œë¥¼ íŒŒë¼ë¯¸í„°ë¡œ ë°›ìŒ
     Fish(int sizeInput, const string& textureRightPath, const string& textureLeftPath)
-        : size(sizeInput), movingRight(true), speed(0.05f) {
+        : size(sizeInput), movingRight(true), speed(0.05f), imgPath(textureRightPath){
 
-        // ÅØ½ºÃ³ ·Îµå
+        // í…ìŠ¤ì²˜ ë¡œë“œ
         if (!fishTextureRight.loadFromFile(textureRightPath) ||
             !fishTextureLeft.loadFromFile(textureLeftPath)) {
             throw runtime_error("Failed to load fish textures");
         }
 
-        // ¹°°í±â ¸ğ¾ç ÃÊ±âÈ­
+        // ë¬¼ê³ ê¸° ëª¨ì–‘ ì´ˆê¸°í™”
         fishShape.setSize(Vector2f(static_cast<float>(size), static_cast<float>(size / 2)));
         fishShape.setTexture(&fishTextureRight);
-        fishShape.setPosition(-1.0f, 500.0f);  // ÃÊ±â À§Ä¡ ¼³Á¤
+        fishShape.setPosition(-1.0f, 500.0f);  // ì´ˆê¸° ìœ„ì¹˜ ì„¤ì •
     }
 
     void setPosition(float x, float y) {
@@ -82,7 +83,7 @@ public:
             move(-speed, 0.0f);
         }
 
-        // È­¸éÀ» ¹ş¾î³ªÁö ¾Êµµ·Ï ÀÌµ¿ ¹æÇâÀ» ¹İÀü½ÃÅ´
+        // í™”ë©´ì„ ë²—ì–´ë‚˜ì§€ ì•Šë„ë¡ ì´ë™ ë°©í–¥ì„ ë°˜ì „ì‹œí‚´
         if (getPosition().x >= 1200 || getPosition().x <= -230) {
             movingRight = !movingRight;
             setDirection(movingRight);
@@ -90,7 +91,6 @@ public:
     }
 
     void printInfo() const {
-        cout << "Fish Info:" << endl;
         cout << "Name: " << name << endl;
         cout << "Size: " << size << endl;
         cout << "Value: " << value << endl;
@@ -98,9 +98,33 @@ public:
         cout << "Coin: " << coin << endl;
     }
 
-    // ¹°°í±â¸¦ È­¸é¿¡ ±×¸®±â À§ÇÑ draw ¸Ş¼­µå ¿À¹ö¶óÀÌµå
+    String getName() const {
+        return "common fish";
+    }
+
+    int getSize() const {
+        return size;
+    }
+
+    String getValue() const {
+        return value;
+    }
+
+    String getArea() const {
+        return area;
+    }
+
+    int getCoin() const {
+        return coin;
+    }
+
+    String getImg() const {
+        return imgPath;
+    }
+
+    // ë¬¼ê³ ê¸°ë¥¼ í™”ë©´ì— ê·¸ë¦¬ê¸° ìœ„í•œ draw ë©”ì„œë“œ ì˜¤ë²„ë¼ì´ë“œ
     virtual void draw(RenderTarget& target, RenderStates states) const override {
-        target.draw(fishShape, states);  // fishShape¸¦ ±×¸³´Ï´Ù
+        target.draw(fishShape, states);  // fishShapeë¥¼ ê·¸ë¦½ë‹ˆë‹¤
     }
 };
 
@@ -110,27 +134,27 @@ private:
     Texture miniFishTextureRight;
 
 public:
-    // MiniFish »ı¼ºÀÚ¿¡¼­ ÅØ½ºÃ³ ÆÄÀÏ °æ·Î¸¦ ¹ŞÀ½
+    // MiniFish ìƒì„±ìì—ì„œ í…ìŠ¤ì²˜ íŒŒì¼ ê²½ë¡œë¥¼ ë°›ìŒ
     MiniFish(int sizeInput, const string& textureRightPath, const string& textureLeftPath)
-        : Fish(sizeInput, textureRightPath, textureLeftPath) {  // ºÎ¸ğ Å¬·¡½º »ı¼ºÀÚ È£Ãâ
-        // MiniFish¿¡ ¸Â´Â °íÀ¯ °ªµé ¼³Á¤
-        name = "MiniFish";  // ÀÌ¸§ º¯°æ
-        value = "Common";   // °¡Ä¡ º¯°æ
-        area = "Pond";      // ¿µ¿ª º¯°æ
-        coin = 50;          // ÄÚÀÎ º¯°æ
-        setSpeed(0.2f);     // ¼Óµµ ¼³Á¤ (´Ù¸£°Ô ¼³Á¤ °¡´É)
+        : Fish(sizeInput, textureRightPath, textureLeftPath) {  // ë¶€ëª¨ í´ë˜ìŠ¤ ìƒì„±ì í˜¸ì¶œ
+        // MiniFishì— ë§ëŠ” ê³ ìœ  ê°’ë“¤ ì„¤ì •
+        name = "mini fish";  // ì´ë¦„ ë³€ê²½
+        value = "Common";   // ê°€ì¹˜ ë³€ê²½
+        area = "pond";      // ì˜ì—­ ë³€ê²½
+        coin = 50;          // ì½”ì¸ ë³€ê²½
+        setSpeed(0.1f);     // ì†ë„ ì„¤ì • (ë‹¤ë¥´ê²Œ ì„¤ì • ê°€ëŠ¥)
 
-        // MiniFishÀÇ ÅØ½ºÃ³ ·Îµå
+        // MiniFishì˜ í…ìŠ¤ì²˜ ë¡œë“œ
         if (!miniFishTextureRight.loadFromFile(textureRightPath) ||
             !miniFishTextureLeft.loadFromFile(textureLeftPath)) {
             throw runtime_error("Failed to load MiniFish textures");
         }
 
-        // MiniFishÀÇ Å©±â º¯°æ (±âº» Å©±â¿Í ºñÀ²À» ´Ù¸£°Ô ¼³Á¤)
+        // MiniFishì˜ í¬ê¸° ë³€ê²½ (ê¸°ë³¸ í¬ê¸°ì™€ ë¹„ìœ¨ì„ ë‹¤ë¥´ê²Œ ì„¤ì •)
         fishShape.setSize(Vector2f(static_cast<float>(size / 2), static_cast<float>(size / 4)));
-        fishShape.setPosition(100.0f, 500.0f);  // ÃÊ±â À§Ä¡ ¼³Á¤
-        setDirection(true);  // ÃÊ±â ¹æÇâ ¼³Á¤ (¿À¸¥ÂÊÀ¸·Î ÀÌµ¿)
+        fishShape.setPosition(100.0f, 500.0f);  // ì´ˆê¸° ìœ„ì¹˜ ì„¤ì •
+        setDirection(true);  // ì´ˆê¸° ë°©í–¥ ì„¤ì • (ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì´ë™)
     }
 
-    // MiniFish¿¡ ÇÊ¿äÇÑ ¸Ş¼­µå¸¦ ¿©±â¿¡ Ãß°¡ÇÒ ¼ö ÀÖ½À´Ï´Ù.
+    // MiniFishì— í•„ìš”í•œ ë©”ì„œë“œë¥¼ ì—¬ê¸°ì— ì¶”ê°€í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
 };

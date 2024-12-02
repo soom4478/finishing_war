@@ -5,25 +5,31 @@
 #include "fish.cpp"
 
 using namespace sf;
+using namespace std;
 
 int main()
 {
     RenderWindow window(VideoMode(1200, 750), "Fishing Game");
+    locale::global(std::locale("ko_KR.UTF-8"));
 
     // 배경 텍스처 설정
-    Texture startBackgroundTexture, gameBackgroundTexture, badendingTexture;
-    Texture clickTexture, infoTexture, btn1Textrue;
+    Texture startBackgroundTexture, gameBackgroundTexture, badendingTexture, happyendingTexture;
+    Texture clickTexture, infoTexture, btn1Textrue, playerTexture, fishInfoTexture;
 
     if (!startBackgroundTexture.loadFromFile("images/background_1.png")) {
-        std::cerr << "Failed to load start background image!" << std::endl;
+        cerr << "Failed to load start background image!" << std::endl;
         return -1;
     }
     if (!gameBackgroundTexture.loadFromFile("images/background_2.png")) {
-        std::cerr << "Failed to load game background image!" << std::endl;
+        cerr << "Failed to load game background image!" << std::endl;
         return -1;
     }
     if (!badendingTexture.loadFromFile("images/badending.png")) {
-        std::cerr << "Failed to load game background image!" << std::endl;
+        cerr << "Failed to load game background image!" << std::endl;
+        return -1;
+    }
+    if (!happyendingTexture.loadFromFile("images/happyending.png")) {
+        cerr << "Failed to load game background image!" << std::endl;
         return -1;
     }
 
@@ -39,11 +45,16 @@ int main()
         cerr << "Fail load" << endl;
         return -1;
     }
+    if (!playerTexture.loadFromFile("images/playerImg.png")) {
+        cerr << "Fail load" << endl;
+        return -1;
+    }
 
     // 배경
     Sprite startBackground(startBackgroundTexture);
     Sprite gameBackground(gameBackgroundTexture);
     Sprite badBackground(badendingTexture);
+    Sprite happybackground(happyendingTexture);
     // 그외
     Sprite clickIcon(clickTexture);
     clickIcon.setPosition(
@@ -56,7 +67,14 @@ int main()
         (window.getSize().y - infoBox.getTexture()->getSize().y) / 2.0f  // Y 좌표
     );
     Sprite checkBtn(btn1Textrue);
-    checkBtn.setPosition(510.f, 270.f);
+    checkBtn.setPosition(
+        (window.getSize().x - checkBtn.getTexture()->getSize().x) / 2.0f, 500.f
+    );
+
+    Sprite player(playerTexture);
+    player.setPosition(
+        (window.getSize().x - infoBox.getTexture()->getSize().x) / 2.0f + 100.f, 100.f
+    );
 
     // 물고기 객체 생성 (30% 확률로 MiniFish 객체 생성)
     Fish* myFish;
@@ -75,10 +93,6 @@ int main()
 
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 
-    CircleShape player(40.0f);
-    player.setFillColor(Color::Green);
-    player.setPosition(560.0f, .0f);
-
     VertexArray line(Lines, 2);
     line[0].color = Color::Black;
     line[1].color = Color::Black;
@@ -94,6 +108,7 @@ int main()
     int missCount = 0;
     int catchedFish = 0;
     int day = 1;
+    int coinCount = 0;
 
     Font font1, font2, font3, font4;
     if (!font1.loadFromFile("fonts/런드리고딕OTF Bold.otf")) {
@@ -126,21 +141,44 @@ int main()
     startT_5.setPosition(465.f, 450.f);
 
     // info 텍스트
-    Text infoT_1("획득 물고기", font1, 50);
-    infoT_1.setFillColor(Color::White);
-    infoT_1.setPosition(465.f, 450.f);
-    Text infoT_2("획득 물고기", font1, 50);
-    infoT_2.setFillColor(Color::White);
-    infoT_2.setPosition(465.f, 450.f);
-    Text infoT_3("획득 물고기", font1, 50);
-    infoT_3.setFillColor(Color::White);
-    infoT_3.setPosition(465.f, 450.f);
-    Text infoT_4("획득 물고기", font1, 50);
-    infoT_4.setFillColor(Color::White);
-    infoT_4.setPosition(465.f, 450.f);
-    Text infoT_5("획득 물고기", font1, 50);
-    infoT_5.setFillColor(Color::White);
-    infoT_5.setPosition(465.f, 450.f);
+    String text1 = L"획득 물고기"; // 한글로 나오게
+    String text2 = myFish->getName();
+    String text3 = L"크기 : " + to_string(myFish->getSize());
+    String text4 = L"지역 : " + myFish->getArea();
+    String text5 = L"희귀도 : " + myFish->getValue();
+    String text6 = L"가격 : " + to_string(myFish->getCoin()) + L"coin";
+
+    Text infoT_1(text1, font1, 27);
+    infoT_1.setFillColor(Color::Black);
+    infoT_1.setPosition(540.f, 210.f);
+    Text infoT_2(text2, font3, 17);
+    infoT_2.setFillColor(Color::Black);
+    infoT_2.setPosition(550.f, 390.f);
+    Text infoT_3(text3, font4, 15);
+    infoT_3.setFillColor(Color::Black);
+    infoT_3.setPosition(485.f, 420.f);
+    Text infoT_4(text4, font4, 15);
+    infoT_4.setFillColor(Color::Black);
+    infoT_4.setPosition(620.f, 420.f);
+    Text infoT_5(text5, font4, 15);
+    infoT_5.setFillColor(Color::Black);
+    infoT_5.setPosition(485.f, 450.f);
+    Text infoT_6(text6, font4, 15);
+    infoT_6.setFillColor(Color::Black);
+    infoT_6.setPosition(620.f, 450.f);
+
+    if (!fishInfoTexture.loadFromFile(myFish->getImg())) {
+        cerr << "fail load";
+        return -1;
+    }
+    Sprite fishInfoImg(fishInfoTexture);
+    fishInfoImg.setPosition(
+        (window.getSize().x - fishInfoImg.getTexture()->getSize().x) / 2.0f, 250.f
+    );
+
+    // status바
+    RectangleShape status(Vector2f(1200, 60.f));
+    status.setFillColor(Color::White);
 
     int gameState = 0;
 
@@ -159,14 +197,26 @@ int main()
                 myFish->setPosition(movingRight ? 3.0f : 1170.0f, 500.0f);
             }
             else if (gameState == 1 && event.type == Event::MouseButtonPressed && !lineMoving && isFishing) {
-                Vector2f playerTopRight = player.getPosition() + Vector2f(player.getRadius(), -player.getRadius());
-                line[0].position = playerTopRight;
-                line[1].position = playerTopRight;
+                // player의 크기와 위치 계산
+                FloatRect playerBounds = player.getGlobalBounds();
+                Vector2f playerRightMiddle(
+                    playerBounds.left + playerBounds.width,           // 오른쪽 끝 X 좌표
+                    playerBounds.top + playerBounds.height / 2.0f - 40.f    // 세로 중앙 Y 좌표
+                );
+
+                // 선(line) 시작점 설정
+                line[0].position = playerRightMiddle;
+                line[1].position = playerRightMiddle;
+
+                // 마우스 클릭 위치를 목표 위치로 설정
                 targetPosition = Vector2f(event.mouseButton.x, event.mouseButton.y);
+
+                // 상태 업데이트
                 lineMoving = true;
                 collisionDetected = false;
                 isFishing = false;
             }
+
             else if (collisionDetected && !lineMoving && clickCount < 10) {
                 if (event.type == Event::MouseButtonPressed) {
                     clickCount++;
@@ -198,8 +248,17 @@ int main()
 
         else if (gameState == 1) {
             window.draw(gameBackground);
+            window.draw(player);
+            window.draw(line);
+            window.draw(*myFish);  // myFish는 포인터이므로 dereference해서 그립니다
+            window.draw(status);
+
             if (!collisionDetected) {
                 myFish->update();
+            }
+
+            if (day == 4) {
+                gameState = 2;
             }
 
             if (!lineMoving && !collisionDetected) {
@@ -215,6 +274,8 @@ int main()
                     collisionDetected = true;
                     fishCaught = true;
                     isFishing = false;
+                    coinCount += myFish->getCoin();
+                    cout << coinCount << endl;
                 }
                 else {
                     // 줄의 길이를 줄여서 자연스럽게 위로 올라가게 만들기
@@ -241,6 +302,17 @@ int main()
             }
 
             if (showInfo) {
+                // 물고기를 잡을 때마다 불러오기
+                if (!fishInfoTexture.loadFromFile(myFish->getImg())) {
+                    cerr << "fail load";
+                    return -1;
+                }
+                text2 = myFish->getName();
+                text3 = L"크기 : " + to_string(myFish->getSize());
+                text4 = L"지역 : " + myFish->getArea();
+                text5 = L"희귀도 : " + myFish->getValue();
+                text6 = L"가격 : " + to_string(myFish->getCoin()) + L"coin";
+
                 window.draw(infoBox);
                 window.draw(checkBtn);
                 window.draw(infoT_1);
@@ -248,6 +320,8 @@ int main()
                 window.draw(infoT_3);
                 window.draw(infoT_4);
                 window.draw(infoT_5);
+                window.draw(infoT_6);
+                window.draw(fishInfoImg);
             }
 
             if (lineMoving) {
@@ -323,10 +397,10 @@ int main()
                     }
                 }
             }
+        }
 
-            window.draw(line);
-            window.draw(player);
-            window.draw(*myFish);  // myFish는 포인터이므로 dereference해서 그립니다
+        else if (gameState == 2) {
+            window.draw(happybackground);
         }
 
         else if (gameState == 3) {
